@@ -14,6 +14,8 @@ int main(int argc, char *argv[]) {
   x = 0;
   pid = 0;
 
+  printf(1, "dpro is running as %d to make %d childs\n", getpid(), n);
+
   for ( k = 0; k < n; k++ ) {
     pid = fork ();
     if ( pid < 0 ) printf(1, "%d failed in fork!\n", getpid());
@@ -23,9 +25,9 @@ int main(int argc, char *argv[]) {
       wait();
     }
     else{
-    printf(1,"Child %d created\n",getpid());
-    for(z = 0; z < 4000000000; z+=1) x = x + 3.14*89.64; //Useless calculation to consume CPU Time
-    break;
+      printf(1,"Child %d created\n",getpid());
+      for(z = 0; z < 4000000000; z+=1) x = x + 3.14*89.64; //Useless calculation to consume CPU Time
+      break;
     }
   }
   exit();
