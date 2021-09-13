@@ -541,14 +541,28 @@ procdump(void)
 }
 
 int cps (void) {
-  struct proc *p;
+  struct proc *p, *pt;
+  int sib[20];
   sti();
   acquire(&ptable.lock);
-  cprintf(" name \t pid \t state \t\t priority \n");
+  cprintf(" name \t pid \t state \t\t priority \t parent \t sibling \n");
   for(p = ptable.proc; p < &ptable.proc[NPROC]; p++) {
-    if (p->state == SLEEPING) cprintf(" %s \t %d \t SLEEPING \t %d \n", p->name, p->pid, p->priority);
-    else if (p->state == RUNNING) cprintf(" %s \t %d \t RUNNING \t %d \n", p->name, p->pid, p->priority);
-    else if (p->state == RUNNABLE) cprintf(" %s \t %d \t RUNNABLE \t %d \n", p->name, p->pid, p->priority);
+    if (p->state != UNUSED) {
+      int f , i;
+      f = 0;
+      for(pt = ptable.proc; pt < &ptable.proc[NPROC]; pt++) if (pt->state != UNUSED && p->parent == pt->parent && p->pid != pt->pid) {
+        sib[f] = pt->pid;
+        f += 1;
+      }
+      if (p->state == SLEEPING) cprintf(" %s \t %d \t SLEEPING \t %d \t\t %d \t\t ", p->name, p->pid, p->priority, p->parent->pid);
+      else if (p->state == RUNNING) cprintf(" %s \t %d \t RUNNING \t %d \t\t %d \t\t ", p->name, p->pid, p->priority, p->parent->pid);
+      else if (p->state == RUNNABLE) cprintf(" %s \t %d \t RUNNABLE \t %d \t\t %d \t\t ", p->name, p->pid, p->priority, p->parent->pid);
+      if (f == 0) cprintf("NS \t\t %d \n", p->priority);
+      else {
+        for (i = 0; i < f; i++) cprintf("%d,", sib[i]);
+        cprintf(" \n");
+      }
+    }
   }
   release(&ptable.lock);
   return 22;
